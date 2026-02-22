@@ -1,0 +1,20 @@
+# Home Assistant Lovelace Card Example
+# Bu kodu Home Assistant panonuzda yeni bir "Manuel" kart ekleyerek yapıştırın.
+
+type: entities
+title: 🖨️ Gelişmiş Tarayıcı Kontrolü
+entities:
+  - entity: input_select.tarama_profili
+    name: Profil Seçimi
+  - entity: input_select.tarama_dpi
+    name: Çözünürlük (DPI)
+  - entity: sensor.tarayici_durumu
+    name: Son Durum
+    icon: mdi:information-outline
+  - type: button
+    name: Seçili Ayarlarla Taramayı Başlat
+    icon: mdi:scanner
+    action_name: BAŞLAT
+    tap_action:
+      action: call-service
+      service: shell_command.tara_ham
