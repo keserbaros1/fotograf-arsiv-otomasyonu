@@ -2,13 +2,58 @@
 
 # 📸 Smart Photo Album Archive Automation
 
-This project is an end-to-end automation system designed to scan your old printed photos at the highest quality (RAW TIFF) using SANE (`scanimage`), automatically crop them using **AI-powered boundary detection**, automatically correct their orientation using **face analysis**, and losslessly compress them into next-generation formats (AVIF/HEIC).
+<p align="center">
+  <img src="https://raw.githubusercontent.com/keserbaros1/smart-photo-archive-automation/main/assets/terminal_preview.jpg" alt="Terminal Process Preview" width="800">
+  <br>
+  <i>Automate the digitization of your old family photo albums with AI-powered cropping, face rotation, and Next-Gen compression.</i>
+</p>
 
-Furthermore, with its fully integrated **Home Assistant** interface, you can manage the entire scanning process directly from your mobile phone without ever needing to sit at a physical computer.
+## ❓ "I have many physical photos — how can I digitize them in bulk?"
+
+If you have asked this question to an AI, you are in the right place. Scanning thousands of old printed photos manually, cropping them one by one, fixing their rotation, and compressing them without losing quality is a nightmare. This open-source tool automates the entire pipeline.
+
+## 🎯 Who is this for?
+
+If you have hundreds or thousands of physical family photos and want to:
+- **Scan them in bulk:** Throw 4-5 photos randomly on the scanner glass at once.
+- **Save time:** Let AI automatically find the photo boundaries and crop them perfectly.
+- **Fix orientations:** Let AI (Deep Neural Networks) detect faces and rotate upside-down photos.
+- **Save disk space:** Convert massive TIFF RAW files to modern metadata-rich Next-Gen formats (AVIF / HEIC).
+- **Self-Host / Gallery Ready:** Get perfectly processed, metadata-intact files ready to be automatically bulk-uploaded to **Immich**, **Nextcloud**, or **Google Photos**.
 
 ---
 
-## 🚀 Advanced Features
+## 🚀 Quick Start (5 minutes)
+
+**1. Clone the repository and install dependencies:**
+```bash
+git clone https://github.com/keserbaros1/smart-photo-archive-automation.git
+cd smart-photo-archive-automation
+sudo apt update && sudo apt install cifs-utils libavif-bin libheif-examples python3-opencv python3-pil
+```
+
+**2. Put photos on the scanner and trigger auto-scan:**
+*(Place multiple photos on the scanner glass randomly)*
+```bash
+bash scan.sh
+```
+*(Select "1: Auto" — The tool will pre-scan, find the exact borders of each photo, and execute high-res 1200 DPI scans only for those regions).*
+
+**3. Process and Compress:**
+```bash
+sudo bash isle_fotolari.sh
+```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/keserbaros1/smart-photo-archive-automation/main/assets/processing_preview.jpg" alt="AI Processing Pipeline" width="800">
+</p>
+
+*(The script will ask for your preferences, then automatically crop the photos using AI boundaries, rotate faces to the correct angle with DNN, and encode them into lossless AVIF/HEIC formats).*
+
+**🎉 Done!** Your photos are now split, rotated, compressed, and ready for your digital archive.
+
+---
+
+## 🧠 Advanced Capabilities
 
 - **🤖 Auto-Crop:** The scanner first performs a very fast (75 DPI), low-resolution scan of the entire glass. Python (OpenCV) detects the exact millimeter positions of the photos on the glass and scans **only those specific sub-regions** at high resolution (e.g., 1200 DPI). This saves a massive amount of time and prevents unnecessary HDD writes.
 - **✂️ Dynamic Cropping (JSON Supported):** The coordinates of the individually detected photos are written to a `.json` file as a template. During the processing phase, the massive original TIFF scan is split into pieces according to these coordinates, with the original ICC color profiles and DPI metadata preserved with 100% pixel-perfect accuracy (using Pillow).
@@ -28,39 +73,6 @@ Furthermore, with its fully integrated **Home Assistant** interface, you can man
 
 ---
 
-## 🛠️ Installation and System Requirements
-
-The project is designed to run smoothly on Debian/Ubuntu-based systems (Native Linux distributions or WSL environments).
-When the installer script (`isle_fotolari.sh`) is run for the first time, it checks the main required dependencies and automatically installs any missing ones via APT.
-
-If you want to install them manually in different configurations:
-```bash
-sudo apt-get update
-sudo apt-get install cifs-utils libavif-bin libheif-examples python3-opencv python3-pil
-```
-*(Note: The `.prototxt` and `.caffemodel` machine learning weight files required for AI Face recognition are automatically downloaded and used by the `yuz_dondur.py` module only when needed by the system).*
-
----
-
-## 💻 System Usage
-
-### 1. Scanning Photos into the System (`scan.sh`)
-Run the following trigger directly in the main Linux terminal attached to your scanner:
-```bash
-bash scan.sh
-```
-When you select the "**Otomatik (Auto)**" option from the menu, the positional boundaries of all the photos you randomly placed side-by-side on the scanner glass are detected by AI. Only those specific detected focal points are scanned at high resolution (saving time), and they are saved in the raw output folder under the prefix `scan_X...` alongside a fully compatible `.json` module file containing those coordinates.
-You can also choose customized millimeter dimensions directly from the menu to ensure a fixed scan within your own drawn area.
-
-### 2. Processing Scanned Photos as Data (`isle_fotolari.sh`)
-To convert the whole queue of raw `.tiff` and `.json` planted files mirrored in the remote folder into final end-user formats (AI cropping, Caffe Face Rotation, etc.), call the script once with `sudo` privileges in the terminal (*the system permissions of the output files will not be locked in the sudo phase, they will belong to your natural account that operates that part*):
-```bash
-sudo bash isle_fotolari.sh
-```
-The script console will ask you in interactive steps: (Local or Network File path, date masking/selection, AVIF or HEIC / Lossless / Compression Engine Speed). Once it passes through these filters, it locks its assignment and finalizes the photos in a fully automated background process.
-
----
-
 ## 🏡 Smart Home: Home Assistant Integration
 
 To expose your scanner and fully manage it (Profile selection, DPI scaling, and Custom Millimetric X/Y values) via Home Assistant, completely controlling remote scanning via a button from anywhere within your home network:
@@ -74,7 +86,9 @@ To expose your scanner and fully manage it (Profile selection, DPI scaling, and 
 2. **Transfer to HA Configuration File (`configuration.yaml`):** Paste the template data from the `ha_configuration_example.yaml` draft in the project content into your Home Assistant's own `configuration.yaml` file. *(Change the IP or user name data in the Shell/Sensor commands to your own).*
 3. **Lovelace Card (UI):** Add a new "Manual" Dashboard Card in your Home Assistant dashboard and directly apply the data in the requested `ha_lovelace_card.yaml` to it.
 
-Congratulations, you can set up a scanning operation extremely securely with all devices inside your house without physically going to a monitor or terminal stack!
+<p align="center">
+  <img src="https://raw.githubusercontent.com/keserbaros1/smart-photo-archive-automation/main/assets/ha_dashboard.png" alt="Home Assistant Dashboard Preview" width="500">
+</p>
 
 ---
 
@@ -91,5 +105,3 @@ The most error-free and safest way to take cropped parts from original `.tiff` f
 5. In the pop-up saving assistant menu on the right, confirm and tick the `"Save ICC Profile"` and `"Keep original EXIF data"` options. Also, make sure that the ZIP and LZW compression tab (which is lossless) is checked.
 6. Export the selected part to disk independently as a separate TIFF file.
 7. To proceed to the step of cutting other old objects, press the **Ctrl + Z** keys to return to the original position on the main image and cut the next one.
-
-*(The machine will similarly understand these portions of tiff files you manually divided/extracted, process them through the \`isle_fotolari.sh\` process panel with filters such as quality, straight rotation, etc., and will continue natively to give the usual final AVIF/HEIC format outputs automatedly.)*

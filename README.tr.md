@@ -2,13 +2,53 @@
 
 # 📸 Akıllı Fotoğraf Tarama ve İşleme Otomasyonu (Smart Photo Scanner)
 
-Bu proje, basılı eski fotoğraflarınızı en yüksek kalitede SANE (`scanimage`) ile yüksek çözünürlükte (RAW TIFF) taramak, **Yapay Zeka destekli otomatik kesme**, **yüz analizi ile otomatik döndürme**, ve yeni nesil formatlarda (AVIF/HEIC) kayıpsız olarak sıkıştırmak için tasarlanmış uçtan uca bir otomasyon sistemidir. 
+<p align="center">
+  <!-- (Buraya ileride terminalin veya Home Assistant'ın bir ekran görüntüsünü koyabilirsiniz: ![Screenshot](link-gelecek) ) -->
+  <i>Eski aile albümlerinizi yapay zeka ile otomatik kesim, yüz tanıma rotasyonu ve yeni nesil sıkıştırma ile dijitale aktarın.</i>
+</p>
 
-Ayrıca tam entegre bir **Home Assistant** arayüzü ile fiziksel bir bilgisayar başına geçmeden tüm tarama süreçlerini doğrudan cep telefonunuz üzerinden yönetebilirsiniz.
+## ❓ "Evde çok fazla sayıda fiziksel fotoğrafım var. Bunları kaliteli, hızlı ve toplu şekilde taratıp uygulamlara (Immich vb.) kaydetmek istiyorum. Nasıl yapabilirim?"
+
+Eğer yapay zeka araçlarına veya arama motorlarına bu soruyu sorduysanız doğru yerdesiniz. Binlerce eski basılı fotoğrafı tek tek taramak, manuel olarak kırpmak, ters çıkanları düzeltmek ve kalitesini bozmadan sıkıştırmak tam bir kabustur. Bu açık kaynaklı araç sayesinde artık fotoğraf yığınlarınızı otomatize edebilirsiniz!
+
+## 🎯 Bu Proje Kimler İçin?
+
+Binlerce basılı aile fotoğrafınız varsa ve şunları yapmak istiyorsanız:
+- **Toplu Tarama:** 4-5 fotoğrafı aynı anda tarayıcı camına rastgele atarak tek seferde taramak.
+- **Zaman Tasarrufu:** Yapay zekanın (AI) tüm fotoğrafların yerini milimetrik olarak tespit edip kusursuz kırpmasını sağlamak.
+- **Yüzleri Düzeltmek:** Sadece ters (dik) konumda konmuş fotoğrafların içindeki yüzleri Derin Öğrenme (DNN) ile tespit edip fotoğrafı otomatik olarak düz yönüne çevirmek.
+- **Disk Alanı Tasarrufu:** Devasa TIFF dosyalarını modern ve metaverisi korunan Yeni Nesil (AVIF / HEIC) formatlarında sıkıştırmak.
+- **Kendi Sunucunuz (Self-Host):** Sonuçlanan hatasız dosyalarınızı doğrudan **Immich**, **Nextcloud** veya **Google Photos** galerilerinize toplu yüklemeye hazır halde çıkartmak.
 
 ---
 
-## 🚀 Gelişmiş Özellikler
+## 🚀 Hızlı Başlangıç (5 Dakika)
+
+**1. Depoyu indirin ve bağımlılıkları kurun:**
+```bash
+git clone https://github.com/keserbaros1/smart-photo-archive-automation.git
+cd smart-photo-archive-automation
+sudo apt update && sudo apt install cifs-utils libavif-bin libheif-examples python3-opencv python3-pil
+```
+
+**2. Fotoğrafları tarayıcıya koyup otomatik taramayı başlatın:**
+*(Tarayıcınızın camına birkaç fotoğrafı yan yana dizin)*
+```bash
+bash scan.sh
+```
+*(Menüden "1: Otomatik"i seçin — Betik hızlı bir ön tarama yapacak, resimlerin kesin konumlarını yapay zeka ile tespit edip sadece o bölgeleri 1200 DPI kalitede hızlıca tarayacaktır).*
+
+**3. İşleme ve Sıkıştırma Adımı:**
+```bash
+sudo bash isle_fotolari.sh
+```
+*(Betik size tarih vb. tercihlerinizi soracak; ardından bu fotoğrafları koordinatlara göre kesip biçecek, Caffe DNN modeli ile insan yüzlerini anlayıp ters fotoğrafları düzeltecek ve kayıpsız formatlarda (AVIF/HEIC) sıkıştıracaktır).*
+
+**🎉 Tebrikler!** Fotoğraflarınız artık bölünmüş, döndürülmüş ve dijital arşiviniz için en üst sıkıştırmayla hazır hale gelmiştir.
+
+---
+
+## 🧠 Gelişmiş Özellikler ve Detaylar
 
 - **🤖 Otomatik Sınır Algılama (Auto-Crop):** Tarayıcı önce tüm camı çok hızlı (75 DPI) ve düşük çözünürlükte tarar. Python (OpenCV) camdaki fotoğrafların yerini milimetrik olarak tespit eder ve **sadece fotoğrafların olduğu o alt bölgeleri** yüksek çözünürlükte (örn: 1200 DPI) tarayarak devasa zaman ve gereksiz HDD boşa yazım tasarrufu sağlar.
 - **✂️ Dinamik Kesim (JSON Destekli):** Ayrı ayrı tespit edilen fotoğrafların koordinatları `.json` dosyasına şablon olarak yazılır. İşleme aşamasında devasa boyutlu asıl TIFF taraması bu koordinatlara göre, orijinal ICC renk profilleri ve DPI meta verisi %100 noktası noktasına korunarak parçalara ayrılır (Pillow kullanılarak).
@@ -25,39 +65,6 @@ Ayrıca tam entegre bir **Home Assistant** arayüzü ile fiziksel bir bilgisayar
 * `isle_fotolari.sh`: Ham `tıff/json` blok dosyalarını topluca bulur, Python betik dizisini sırayla çalıştırır, alt klasöleri/çöp klasörleri oluşturur ve belirlediğiniz parametrelerde yüksek sıkıştırmayı yapar.
 * `sabit_kirp.py`: Ham TIFF dosyalarını hiçbir renk modülünü veya DPI miktarını bozmadan okur ve `.json` değerlerine bölümlerine göre ayırarak ana çıktıyı klasöre geçirir.
 * `yuz_dondur.py`: Parçalanmış ve oluşturulmuş son TIFF çıktılarındaki yüzleri AI/DNN Caffe ile tespit edip resmi hatasız izometrik bir şekliyle dikey açıya döndürür. (*Çevrimdışı çalışabilmek için gereken Caffe yapay zeka model dosyalarını ilk seferinde otomatik olarak internetten kurar*).
-
----
-
-## 🛠️ Kurulum ve Sistem Gereksinimleri
-
-Proje Debian/Ubuntu tabanlı sistemlerde (Native Linux cihazlar veya WSL yapıları) sorunsuz çalışmak üzere tasarlanmıştır. 
-Kurucu betik olan (`isle_fotolari.sh`) ilk defa çalıştırıldığında gerekli olan ana bağımlılıkları kontrol der ve eksikleri otomatik olarak APT üstünden kurar. 
-
-Farklı konfigürasyonlarda manuel kurmak isterseniz:
-```bash
-sudo apt-get update
-sudo apt-get install cifs-utils libavif-bin libheif-examples python3-opencv python3-pil
-```
-*(Not: AI Yüz tanıma için gereken `.prototxt` ve `.caffemodel` uzantılı makine eğitim ağırlığı dosyaları sadece sisteme ihtiyaç duyulduğu safhada `yuz_dondur.py` modülü tarafından otomatik indirilip kullanılır.)*
-
----
-
-## 💻 Sistem Kullanımı
-
-### 1. Sisteme Fotoğraf Taratmak (`scan.sh`)
-Tarayıcınızın bağlı olduğu ana Linux terminalinde doğrudan şu tetikleyiciyi başlatın:
-```bash
-bash scan.sh
-```
-Açılan menüde "**Otomatik**" seçeneğini belirlediğinizde, tarayıcı camına yan yana rastgele yerleştirdiğiniz bütün fotoğrafların konum sınırları yapay zeka ile tespit edilir, sadece o tespitli spesifik odaklar yüksek çözünürlükte taranır (Zaman kazanır) ve yanlarında o koordinatları barındıran tam uyumlu bir `.json` modülü dosyası ile ham çıktılar klasörüne `scan_X...` ön adıyla kaydedilir. 
-Menüden doğrudan özel milimetre boyutları seçerek kendi çizdiğiniz alanınız dahilinde sabit taranmasını sağlayabilirsiniz.
-
-### 2. Taranmış Fotoğrafları Veri Olarak İşletmek (`isle_fotolari.sh`)
-Uzak klasörde yansıyan tüm ham `.tiff` ve `.json` ekili dosya kuyruğunu son kullanıcı bitmiş formatlarına (AI kesim, Caffe Yüz Döndürme vb.) çevirmek için betiği terminalde bir defa `sudo` yetkisiyle çağırın (*çıktı dosyalarının sistem izinleri sudo aşamasında kilitlenmeyecektir işlem yapan o kısımdaki doğal hesabınıza ait olacaktır*):
-```bash
-sudo bash isle_fotolari.sh
-```
-Betik konsolu size interaktif adımlar halinde soracaktır: (Yerel ya da Ağ Dosyası yolu, tarih maskelemesi / seçimi, AVIF mi HEIC mi / Lossless / Sıkıştırma Motor Hızı) gibi filtrelerden geçer atamasını kendi üzerine kitler ve tam otomatik arka plan sürecinde fotoğrafları son haline getirir.
 
 ---
 
@@ -91,5 +98,3 @@ Windows üzerinden asıl renk/DPI datasını gram bozmadan orijinal `.tiff` dosy
 5. Sağ taraftaki beliren kaydetme yardımcı menüsündeki `"Save ICC Profile"` ve `"Keep original EXIF data"` kısımlarını onaylayıp tikleyin. ZIP ve LZW sıkıştırma sekmesinin (kayıpsızdır) işaretli olduğuna da özen gösterin.
 6. Seçili parçayı ayrı TIFF dosyası gibi diske bağımsız dışa yazdırın.
 7. Diğer eski nesneleri kesme adımına geçmek için **Ctrl + Z** tuşlarına basarak ana resme orijinal konuma dönün ve sıradakini kesin.
-
-*(Cihaz bu sizin el yordamıyla böldüğünüz/ayıklattığınız tiff dosyası kısımlarını aynı şekilde anlayıp \`isle_fotolari.sh\` süreç panelinden kalite, düz rotasyon vb filtrelerle çalıştırıp olağan son AVIF/HEIC format çıktılarını vermeye otomatize biçimde devam edecektir.)*
